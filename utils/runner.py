@@ -48,26 +48,30 @@ class LLMRunner:
         return so_llm
 
     def _call_llm(self, llm):
-        try:
-            prompt = get_random_prompt()
-            result = llm.invoke(prompt)
-            return result
-        except Exception as e:
-            self.logger.error(f"Error in call_llm: {e}")
-            return False
+        prompt = get_random_prompt()
+        result = llm.invoke(prompt)
+        self.logger.info(f"LLM response: {result.response}")
+        return result
 
     def run(self):
         index = resource_exhausted_retry = 0
         while True:
-            model = self.model_info[0]
+            model = self.model_info[index]
             try:
+                # if the model is not active, skip it
+                if not model['is_active']:
+                    index += 1
+                    if index > self.model_length:
+                        index = 0
+                    continue
+
                 llm = self._get_structured_output_llm(model_name=model['name'])
                 self._call_llm(llm)
                 model['count'] += 1
             except ResourceExhausted as e:
                 index += 1
                 resource_exhausted_retry += 1
-                if index >= self.model_length:
+                if index > self.model_length:
                     index = 0
                 if resource_exhausted_retry >= self.resource_exhausted_retry:
                     output_dir = os.getenv('OUTPUT_DIR', 'output')

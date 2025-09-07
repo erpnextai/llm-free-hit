@@ -9,6 +9,7 @@ def main(provider):
     log_filename = f"{provider.lower()}.log"
     logger = get_logger(provider, log_filename)
 
+    logger.info(f"Starting the script with provider: {provider}")
     if provider == 'Gemini':
         runner = LLMRunner(logger=logger, model_info=GEMINI_MODELS, provider=provider)
         runner.run()

@@ -29,8 +29,8 @@ You are a helpful assistant that provides concise and clear answers to user ques
 """ # noqa
 
 GEMINI_MODELS = [
-    {"name": "gemini-2.0-flash-lite", "verbose": "Gemini 2.0 Flash-Lite"},
-    {"name": "gemini-2.5-flash-preview-04-17", "verbose": "Gemini 2.5 Flash Preview 04-17"},
-    {"name": "gemini-2.0-flash", "verbose": "Gemini 2.0 Flash"},
-    {"name": "gemini-2.5-flash-preview-05-20", "verbose": "Gemini 2.5 Flash Preview 05-20"}
+    {"name": "gemini-2.0-flash-lite", "verbose": "Gemini 2.0 Flash-Lite", "is_active": True},
+    {"name": "gemini-2.5-flash-preview-04-17", "verbose": "Gemini 2.5 Flash Preview 04-17", "is_active": False},
+    {"name": "gemini-2.0-flash", "verbose": "Gemini 2.0 Flash", "is_active": True},
+    {"name": "gemini-2.5-flash-preview-05-20", "verbose": "Gemini 2.5 Flash Preview 05-20", "is_active": True},
 ]
