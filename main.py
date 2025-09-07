@@ -1,13 +1,14 @@
 from dotenv import load_dotenv
 from utils.constant import GEMINI_MODELS
 import argparse
-from logging import getLogger
+from utils import get_logger
 from utils.runner import LLMRunner
 
 
 def main(provider):
     log_filename = f"{provider.lower()}.log"
-    logger = getLogger(provider, log_filename)
+    logger = get_logger(provider, log_filename)
+
     if provider == 'Gemini':
         runner = LLMRunner(logger=logger, model_info=GEMINI_MODELS, provider=provider)
         runner.run()

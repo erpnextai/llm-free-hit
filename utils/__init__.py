@@ -1,6 +1,6 @@
 from utils.constant import QUESTIONS, PROMPT
 import random
-
+from utils.logger import get_logger
 from pydantic import BaseModel, Field
 from typing import List
 
@@ -20,3 +20,6 @@ def get_random_prompt() -> str:
     random_question = random.choice(QUESTIONS)
     prompt = PROMPT.format(question=random.choice(random_question))
     return prompt
+
+
+__all__ = ["get_random_prompt", "LLMFreeHitBaseModel", "get_logger"]
