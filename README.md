@@ -30,5 +30,14 @@ A script for checking Free Hit functionality.
 
 4. **Run the script**:
     ```bash
-    python gemini.py
+    python main.py --provider Gemini
     ```
+
+# .env
+The `.env` file should contain the following environment variables:
+
+```bash
+GOOGLE_API_KEY=your_api_key_here
+
+OUTPUT_DIR=output
+```
