@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from utils import get_random_prompt, LLMFreeHitBaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
-from google.api_core.exceptions import ResourceExhausted
+from google.api_core.exceptions import ResourceExhausted, NotFound
 
 
 class LLMChat(ABC):
@@ -20,7 +20,7 @@ class LLMChat(ABC):
 
 class LLMRunner:
     def __init__(self, logger: logging.Logger, model_info: dict,
-                 provider='Gemini', resource_exhausted_retry=100):
+                 provider='Gemini', resource_exhausted_retry=25):
         self.logger = logger
         self.model_info = model_info
         self.provider = provider
@@ -28,6 +28,24 @@ class LLMRunner:
         self.model_length = len(model_info)
         self.resource_exhausted_retry = resource_exhausted_retry
         self._add_extra_args()
+
+        self.test_all_active_models()
+
+    def test_all_active_models(self):
+        self.logger.info("Testing all active models...")
+        for model in self.model_info:
+            if model['is_active']:
+                try:
+                    llm = self._get_structured_output_llm(model_name=model['name'])
+                    prompt = get_random_prompt()
+                    result = llm.invoke(prompt)
+                    self.logger.info(f"Model {model['name']} response: {result.response}")
+                    model['count'] += 1
+                except NotFound as e:
+                    self.logger.error(f"Model {model['name']} not found: {e}")
+                    model['is_active'] = False
+                except ResourceExhausted as e:
+                    self.logger.error(f"Model {model['name']} resource exhausted: {e}")
 
     def _add_extra_args(self):
         for model in self.model_info:
@@ -61,26 +79,29 @@ class LLMRunner:
                 # if the model is not active, skip it
                 if not model['is_active']:
                     index += 1
-                    if index > self.model_length:
+                    if index >= self.model_length:
                         index = 0
                     continue
 
                 llm = self._get_structured_output_llm(model_name=model['name'])
                 self._call_llm(llm)
                 model['count'] += 1
+                self._save_usage()
             except ResourceExhausted as e:
                 index += 1
                 resource_exhausted_retry += 1
-                if index > self.model_length:
+                if index >= self.model_length:
                     index = 0
                 if resource_exhausted_retry >= self.resource_exhausted_retry:
-                    output_dir = os.getenv('OUTPUT_DIR', 'output')
-                    if not os.path.exists(output_dir):
-                        os.makedirs(output_dir)
-                    output_file = os.path.join(output_dir, f"{self.provider}_usage.csv")
-                    df = pd.DataFrame(self.model_info)
-                    df.to_csv(output_file, index=False)
-                    self.logger.error("Exceeded maximum retries for ResourceExhausted errors.")
-                    self.logger.info(f"Model usage saved to {output_file}")
+                    self._save_usage()
                     break
                 self.logger.info(f"ResourceExhausted error occurred: {e}. Retrying...")
+    
+    def _save_usage(self):
+        output_dir = os.getenv('OUTPUT_DIR', 'output')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        output_file = os.path.join(output_dir, f"{self.provider}_usage.csv")
+        df = pd.DataFrame(self.model_info)
+        df.to_csv(output_file, index=False)
+        self.logger.info(f"Model usage saved to {output_file}")
