@@ -37,3 +37,12 @@ GEMINI_MODELS = [
     {"name": "gemini-2.5-flash-lite", "verbose": "Gemini 2.5 Flash Preview 05-20", "is_active": True},
     {"name": "gemini-2.5-pro", "verbose": "Gemini 2.5 Flash Preview 05-20", "is_active": True}
 ]
+
+GEMINI_GEMA_MODELS = [
+    {"name": "gemma-3n-e2b-it", "verbose": "Gemma 3n E2B", "is_active": True},
+    {"name": "gemma-3n-e4b-it", "verbose": " Gemma 3n E4B", "is_active": True},
+    {"name": "gemma-3-1b-it", "verbose": " Gemma 3 1B", "is_active": True},
+    {"name": "gemma-3-4b-it", "verbose": " Gemma 3 4B", "is_active": True},
+    {"name": "gemma-3-12b-it", "verbose": "G Gemma 3 12B", "is_active": True},
+    {"name": "gemma-3-27b-it", "verbose": "gemma-3-27b-it", "is_active": True}
+]

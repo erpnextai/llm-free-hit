@@ -96,7 +96,9 @@ class LLMRunner:
                     self._save_usage()
                     break
                 self.logger.info(f"ResourceExhausted error occurred: {e}. Retrying...")
-    
+            except Exception as e:
+                self.logger.error(f"Error occurred: {e}")
+
     def _save_usage(self):
         output_dir = os.getenv('OUTPUT_DIR', 'output')
         if not os.path.exists(output_dir):
