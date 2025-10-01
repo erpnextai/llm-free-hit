@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from utils.constant import GEMINI_MODELS
+from utils.constant import GEMINI_MODELS, GEMINI_GEMMA_MODELS
 import argparse
 from utils import get_logger
 from utils.runner import LLMRunner
@@ -13,6 +13,9 @@ def main(provider):
     if provider == 'Gemini':
         runner = LLMRunner(logger=logger, model_info=GEMINI_MODELS, provider=provider)
         runner.run()
+    if provider == 'Gemma':
+        runner = LLMRunner(logger=logger, model_info=GEMINI_GEMMA_MODELS, provider=provider)
+        runner.run()
     if provider == 'Groq':
         print("Groq provider is not implemented yet.")
 
@@ -21,7 +24,7 @@ if __name__ == "__main__":
     load_dotenv(override=True)
 
     parser = argparse.ArgumentParser(description="Run the Gemini script with a specified provider.")
-    parser.add_argument("--provider", type=str, choices=["Gemini", "Groq"], required=True, help="Specify the provider name.") # noqa
+    parser.add_argument("--provider", type=str, choices=["Gemini", "Gemma", "Groq"], required=True, help="Specify the provider name.") # noqa
     args = parser.parse_args()
 
     provider = args.provider

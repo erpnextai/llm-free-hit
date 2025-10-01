@@ -56,6 +56,9 @@ class LLMRunner:
             if self.provider == 'Gemini':
                 llm = ChatGoogleGenerativeAI(model=model_name)
                 return llm
+            if self.provider == 'Gemma':
+                llm = GoogleGemmaChat(model=model_name)
+                return llm
         except Exception as e:
             self.logger.error(f"Error in get_llm: {e}")
             raise Exception(f"Error in get_llm: {e}")
@@ -107,3 +110,59 @@ class LLMRunner:
         df = pd.DataFrame(self.model_info)
         df.to_csv(output_file, index=False)
         self.logger.info(f"Model usage saved to {output_file}")
+
+
+class GoogleGemmaChat(LLMChat):
+    def __init__(self, model: str, api_key: Optional[str] = None):
+        from google import genai
+        self.genai = genai
+        self.client = genai.Client(api_key=api_key or os.environ.get("GEMINI_API_KEY"))
+        self.model = model
+
+    def invoke(self, prompt: str):
+        try:
+            contents = [
+                self.genai.types.Content(
+                    role="user",
+                    parts=[self.genai.types.Part.from_text(text=prompt)],
+                ),
+            ]
+            generate_content_config = self.genai.types.GenerateContentConfig()
+
+            # For simplicity, we’ll take only the first response
+            response_text = ""
+            for chunk in self.client.models.generate_content_stream(
+                model=self.model,
+                contents=contents,
+                config=generate_content_config,
+            ):
+                if chunk.text:
+                    response_text += chunk.text
+
+            class Response:
+                def __init__(self, response):
+                    self.response = response
+
+            return Response(response_text)
+
+        except Exception as e:
+            raise Exception(f"Gemma model invocation failed: {e}")
+
+    def with_structured_output(self, output_cls):
+        """
+        Wrap the invoke output into a structured response using pydantic model
+        """
+        class StructuredGemmaChat(GoogleGemmaChat):
+            def __init__(self, parent):
+                self.parent = parent
+
+            def invoke(self, prompt: str):
+                raw_response = self.parent.invoke(prompt).response
+                try:
+                    # Convert to structured output
+                    parsed = output_cls(response=raw_response)
+                    return parsed
+                except Exception:
+                    return output_cls(response=raw_response)
+
+        return StructuredGemmaChat(self)

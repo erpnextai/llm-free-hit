@@ -18,7 +18,7 @@ def get_random_prompt() -> str:
         str: A formatted prompt string containing a randomly selected question.
     """
     random_question = random.choice(QUESTIONS)
-    prompt = PROMPT.format(question=random.choice(random_question))
+    prompt = PROMPT.format(question=random_question)
     return prompt
 
 
