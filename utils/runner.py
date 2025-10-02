@@ -50,6 +50,7 @@ class LLMRunner:
     def _add_extra_args(self):
         for model in self.model_info:
             model['count'] = 0
+            model['failed_count'] = 0
 
     def _get_llm(self, model_name: Optional[str] = None):
         try:
@@ -91,13 +92,14 @@ class LLMRunner:
                 model['count'] += 1
                 self._save_usage()
             except ResourceExhausted as e:
+                model['failed_count'] += 1
                 index += 1
                 resource_exhausted_retry += 1
                 if index >= self.model_length:
                     index = 0
                 if resource_exhausted_retry >= self.resource_exhausted_retry:
-                    self._save_usage()
                     break
+                self._save_usage()
                 self.logger.info(f"ResourceExhausted error occurred: {e}. Retrying...")
             except Exception as e:
                 self.logger.error(f"Error occurred: {e}")
